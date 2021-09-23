@@ -15,6 +15,7 @@ const (
 	UseCaseGroupWindowTransposeHighCard = "group-window-transpose-high-card"
 	UseCaseGroupWindowTransposeLowCard  = "group-window-transpose-low-card"
 	UseCaseMultiMeasurement             = "multi-measurement"
+	UseCaseDebugdata                    = "debugdata"
 )
 
 // Use case choices:
@@ -27,6 +28,7 @@ var UseCaseChoices = []string{
 	UseCaseGroupAggregate,
 	UseCaseBareAggregate,
 	UseCaseMultiMeasurement,
+	UseCaseDebugdata,
 }
 
 // Simulator simulates a use case.

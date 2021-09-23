@@ -27,6 +27,7 @@ import (
 
 	"github.com/influxdata/influxdb-comparisons/bulk_data_gen/common"
 	"github.com/influxdata/influxdb-comparisons/bulk_data_gen/dashboard"
+	"github.com/influxdata/influxdb-comparisons/bulk_data_gen/debugdata"
 	"github.com/influxdata/influxdb-comparisons/bulk_data_gen/devops"
 	"github.com/influxdata/influxdb-comparisons/bulk_data_gen/iot"
 	"github.com/influxdata/influxdb-comparisons/bulk_data_gen/metaqueries"
@@ -65,6 +66,7 @@ var (
 )
 
 const NHostSims = 9
+const NHostSims_Debugdata = 2
 
 func isFlagPassed(name string) bool {
 	found := false
@@ -138,14 +140,32 @@ func init() {
 		log.Fatal("Invalid sampling interval")
 	}
 	devops.EpochDuration = samplingInterval
+	debugdata.EpochDuration = samplingInterval
 	log.Printf("Using sampling interval %v\n", devops.EpochDuration)
 
-	if isFlagPassed("cardinality") == true {
-		scaleVar = cardinality / NHostSims
+	// if isFlagPassed("cardinality") == true {
+	// 	scaleVar = cardinality / NHostSims
+	// } else {
+	// 	cardinality = scaleVar * NHostSims
+	// }
+	// log.Printf("Using cardinality of %v\n", cardinality)
+
+	// if useCase == debugdata, then NHostSims = 2
+	if useCase == "debugdata" {
+		if isFlagPassed("cardinality") == true {
+			scaleVar = cardinality / NHostSims_Debugdata
+		} else {
+			cardinality = scaleVar * NHostSims_Debugdata
+		}
+		log.Printf("Using cardinality: %v, hostSims :%v, scaleVar: %v\n", cardinality, NHostSims_Debugdata, scaleVar)
 	} else {
-		cardinality = scaleVar * NHostSims
+		if isFlagPassed("cardinality") == true {
+			scaleVar = cardinality / NHostSims
+		} else {
+			cardinality = scaleVar * NHostSims
+		}
+		log.Printf("Using cardinality: %v, hostSims :%v, scaleVar: %v\n", cardinality, NHostSims, scaleVar)
 	}
-	log.Printf("Using cardinality of %v\n", cardinality)
 }
 
 func timeTrack(start time.Time, name string) {
@@ -232,6 +252,15 @@ func main() {
 			End:   timestampEnd,
 
 			ScaleFactor: int(scaleVar),
+		}
+		sim = cfg.ToSimulator()
+	case common.UseCaseChoices[8]:  // debugdata
+		cfg := &debugdata.DevopsSimulatorConfig{
+			Start: timestampStart,
+			End:   timestampEnd,
+
+			HostCount:  scaleVar,
+			HostOffset: scaleVarOffset,
 		}
 		sim = cfg.ToSimulator()
 	default:
